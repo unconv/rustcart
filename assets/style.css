@@ -1,0 +1,65 @@
+body {
+    font-family: 'Ubuntu', sans-serif;
+    text-align: center;
+}
+
+table {
+    width: 600px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+table, tr, td, th {
+    border: 1px solid black;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+thead tr {
+    background: #ccc;
+}
+
+.text-right {
+    text-align: right;
+}
+
+td.remove {
+    width: 70px;
+}
+
+input {
+    font-size: 1em;
+    padding: 5px;
+}
+
+label {
+    display: inline-block;
+    width: 70px;
+}
+
+.add-to-cart {
+    margin-top: 20px;
+}
+
+input[type=text] {
+    margin: 5px;
+}
+
+.error, .success {
+    padding: 8px;
+    background: red;
+    color: #fff;
+    width: 400px;
+    max-width: 100%;
+    margin: 5px auto;
+}
+
+.success {
+    background: green;
+}
+
+form {
+    margin: 0;
+    padding: 0;
+    display: inline;
+}
