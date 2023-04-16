@@ -2,11 +2,12 @@ use querystring::querify;
 use urlencoding::decode;
 use crate::shopping_cart::ShoppingCart;
 use crate::shopping_cart::Product;
+use crate::session::Session;
 
 pub struct ShoppingCartController;
 
 impl ShoppingCartController {
-    pub fn add_to_cart( request_body: String ) -> String {
+    pub fn add_to_cart( request_body: String, session: &Session, headers_out: &mut Vec<String>, status_code: &mut u16 ) -> String {
         let post_data = querify( request_body.as_str() );
         let mut html = String::new();
 
@@ -66,7 +67,7 @@ impl ShoppingCartController {
             return html;
         }
 
-        let mut cart = ShoppingCart::load();
+        let mut cart = ShoppingCart::load( &session );
 
         let product = Product::new(
             name.unwrap().replace("+", " ").as_str(),
@@ -76,7 +77,10 @@ impl ShoppingCartController {
 
         cart.add( product );
 
-        cart.save();
+        cart.save( &session );
+
+        headers_out.push( "Location: /".to_string() );
+        *status_code = 302;
 
         html.push_str( "Added to cart" );
 

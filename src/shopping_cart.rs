@@ -3,6 +3,8 @@ use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 
+use crate::session::Session;
+
 #[derive(Serialize, Deserialize)]
 pub struct ShoppingCart {
     products: Vec<Product>
@@ -30,8 +32,17 @@ impl ShoppingCart {
         serde_json::from_str( json ).unwrap()
     }
 
-    pub fn load() -> Self {
-        let cart_json = fs::read_to_string( "sessions/session.txt" ).unwrap();
+    pub fn get_session_filename( session_id: &str ) -> String {
+        let mut filename = String::from( "sessions/" );
+        filename.push_str( session_id );
+
+        filename
+    }
+
+    pub fn load( session: &Session ) -> Self {
+        let session_filename = ShoppingCart::get_session_filename( session.id.as_str() );
+
+        let cart_json = fs::read_to_string( session_filename.as_str() ).unwrap_or( String::new() );
 
         if cart_json.is_empty() {
             return ShoppingCart::new();
@@ -40,10 +51,12 @@ impl ShoppingCart {
         ShoppingCart::from_json( cart_json.as_str() )
     }
 
-    pub fn save( &self ) {
+    pub fn save( &self, session: &Session ) {
         let cart_json = self.to_json();
 
-        let mut file = File::create( "sessions/session.txt" ).unwrap();
+        let session_filename = ShoppingCart::get_session_filename( session.id.as_str() );
+
+        let mut file = File::create( session_filename ).unwrap();
         _ = file.write_all( cart_json.as_bytes() );
     }
 
