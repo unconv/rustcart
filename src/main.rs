@@ -5,8 +5,11 @@ use std::str::FromStr;
 use std::fs;
 
 mod shopping_cart;
+mod shopping_cart_page;
+mod shopping_cart_controller;
 
-use crate::shopping_cart::{ShoppingCart, Product};
+use crate::shopping_cart_page::ShoppingCartPage;
+use crate::shopping_cart_controller::ShoppingCartController;
 
 fn main() {
     let server = Arc::new( Server::http( "0.0.0.0:9975" ).unwrap() );
@@ -17,23 +20,18 @@ fn main() {
         let server = server.clone();
 
         handles.push( thread::spawn( move || {
-            for request in server.incoming_requests() {
-                let mut headers = vec!["Content-type: text/html"];
+            for mut request in server.incoming_requests() {
+                let mut headers = vec!["Content-type: text/html; charset=utf-8"];
+
+                let mut request_body = String::new();
+                _ = request.as_reader().read_to_string( &mut request_body ).unwrap();
 
                 let response_text = match ( request.method(), request.url() ) {
                     ( Method::Get, "/" ) => {
-                        let mut cart = ShoppingCart::new();
-
-                        cart.add( Product::new( "Product Name", 10.0, 5.0 ) );
-                        cart.add( Product::new( "Product Name 2", 100.0, 2.0 ) );
-        
-                        let total = cart.calculate_total();
-                        let cart_html = cart.render();
-
-                        String::from( "
-                            <link rel=\"stylesheet\" href=\"/style.css\" type=\"text/css\" />
-                            ".to_owned() + cart_html.as_str() + "
-                        " )
+                        ShoppingCartPage::render()
+                    },
+                    ( Method::Post, "/add_to_cart" ) => {
+                        ShoppingCartController::add_to_cart( request_body )
                     },
                     ( Method::Get, "/style.css" ) => {
                         headers.push( "Content-type: text/css" );

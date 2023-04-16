@@ -1,7 +1,14 @@
+use serde::{Serialize, Deserialize};
+use std::fs;
+use std::fs::File;
+use std::io::prelude::*;
+
+#[derive(Serialize, Deserialize)]
 pub struct ShoppingCart {
     products: Vec<Product>
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Product {
     name: String,
     price: f64,
@@ -13,6 +20,31 @@ impl ShoppingCart {
         Self {
             products: Vec::new()
         }
+    }
+
+    pub fn to_json( &self ) -> String {
+        serde_json::to_string( &self ).unwrap()
+    }
+
+    pub fn from_json( json: &str ) -> Self {
+        serde_json::from_str( json ).unwrap()
+    }
+
+    pub fn load() -> Self {
+        let cart_json = fs::read_to_string( "sessions/session.txt" ).unwrap();
+
+        if cart_json.is_empty() {
+            return ShoppingCart::new();
+        }
+
+        ShoppingCart::from_json( cart_json.as_str() )
+    }
+
+    pub fn save( &self ) {
+        let cart_json = self.to_json();
+
+        let mut file = File::create( "sessions/session.txt" ).unwrap();
+        _ = file.write_all( cart_json.as_bytes() );
     }
 
     pub fn add( &mut self, product: Product ) -> &Self {
@@ -65,6 +97,11 @@ impl ShoppingCart {
         " );
 
         html
+    }
+
+    pub fn render_form( &self ) -> String {
+        fs::read_to_string( "templates/add_to_cart_form.html" )
+            .unwrap_or( "{template file not found}".to_owned() )
     }
 }
 
